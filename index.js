@@ -17,46 +17,23 @@ function accessData(data) {
     return finals.Year === 2014 && finals.Stage === "Final";
   });
   return infoAbout2014;
-  // for (let i = 0; i < data.length; i++) {
-  //   if (data[i].Year === 2014 && data[i].Stage === "Final") {
-  //     let homeTeam2014 = data[i]["Home Team Name"];
-  //     let awayTeam2014 = data[i]["Away Team Name"];
-  //     let homeGoals = data[i]["Home Team Goals"];
-  //     let awayGoals = data[i]["Away Team Goals"];
-  //     let theWinner = data[i]["Win conditions"];
-  //     //   infoAbout2014.push(
-  //     //     homeTeam2014,
-  //     //     awayTeam2014,
-  //     //     homeGoals,
-  //     //     awayGoals,
-  //     //     theWinner
-  //     //   );
-  //     infoAbout2014.HomeTeam = homeTeam2014;
-  //     infoAbout2014.AwayTeam = awayTeam2014;
-  //     infoAbout2014.homeGoals = homeGoals;
-  //     infoAbout2014.awayGoals = awayGoals;
-  //     infoAbout2014.whoWon = theWinner;
-  //   }
-  // }
-  // return infoAbout2014;
 }
-let data = accessData(fifaData);
-console.log(data[0]["Home Team Name"]);
-console.log(data[0]["Away Team Name"]);
-console.log(data[0]["Home Team Goals"]);
-console.log(data[0]["Away Team Goals"]);
-console.log(data[0]["Win conditions"]);
+let data1 = accessData(fifaData);
+console.log(data1[0]["Home Team Name"]);
+console.log(data1[0]["Away Team Name"]);
+console.log(data1[0]["Home Team Goals"]);
+console.log(data1[0]["Away Team Goals"]);
+console.log(data1[0]["Win conditions"]);
+console.log(data1);
 // console.log(accessData(fifaData));
 
 /* Task 2: Create a function called  getFinals that takes `data` as an argument and returns an array of objects with only finals data */
 
 function getFinals(data) {
-  let finalsData = [];
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].Stage === "Final") {
-      finalsData.push(data[i]);
-    }
-  }
+  let finalsData = data.filter((games) => {
+    return games.Stage === "Final";
+  });
+  // console.log(finalsData)
   return finalsData;
 }
 getFinals(fifaData);
@@ -66,13 +43,10 @@ console.log(getFinals(fifaData));
 called `years` containing all of the years in the dataset */
 
 function getYears(everyFinals) {
-  let years = [];
-  for (let i = 0; i < everyFinals(fifaData).length; i++) {
-    //   console.log(everyFinals(data).length)
-    // console.log(everyFinals(data)[i].Year)
-    years.push(everyFinals(fifaData)[i].Year);
-  }
-
+  let years = everyFinals(fifaData);
+  years.map((year) => {
+    return year.Year;
+  });
   return years;
 }
 
@@ -81,28 +55,21 @@ console.log(getYears(getFinals));
 /* Task 4: Implement a higher-order function called `getWinners`, that accepts the callback function `getFinals()` and determine 
 the winner (home or away) of each `finals` game. Return the name of all winning countries in an array called `winners` */
 
-function getWinners(everyFinals) {
+function getWinners(everyFinals, arr) {
+  let results = everyFinals(arr);
   let winners = [];
-
-  for (let i = 0; i < everyFinals(fifaData).length; i++) {
-    if (
-      everyFinals(fifaData)[i]["Home Team Goals"] >
-      everyFinals(fifaData)[i]["Away Team Goals"]
-    ) {
-      winners.push(everyFinals(fifaData)[i]["Home Team Name"]);
-    } else if (
-      everyFinals(fifaData)[i]["Home Team Goals"] <
-      everyFinals(fifaData)[i]["Away Team Goals"]
-    ) {
-      winners.push(everyFinals(fifaData)[i]["Away Team Name"]);
+  results.forEach((game) => {
+    if (game["Home Team Goals"] > game["Away Team Goals"]) {
+      winners.push(game["Home Team Name"]);
+    } else if (game["Home Team Goals"] < game["Away Team Goals"]) {
+      winners.push(game["Away Team Name"]);
     } else {
-      winners.push(everyFinals(fifaData)[i]["Win conditions"]);
+      winners.push(game["Win conditions"]);
     }
-  }
+  });
   return winners;
 }
-
-console.log(getWinners(getFinals));
+console.log(getWinners(getFinals, fifaData));
 
 /* Task 5: Implement a higher-order function called `getWinnersByYear` that accepts the following parameters and 
 returns a set of strings "In {year}, {country} won the world cup!" 
@@ -113,16 +80,24 @@ Parameters:
  */
 
 function getWinnersByYear(countryWinner, yearWon) {
-  /*`In ${yearWon(getFinals)}, ${countryWinner(getFinals)} won the world cup!`;
-   */
-  let winningInfo = [];
-  for (let i = 0; i < countryWinner(getFinals).length; i++) {
-    let info = `In ${yearWon(getFinals)[i]}, ${
-      countryWinner(getFinals)[i]
-    } won the world cup!`;
-    winningInfo.push(info);
-  }
-  return winningInfo;
+  const yearCountry = countryWinner(getFinals, fifaData).map(
+    (winner, index) => {
+      return `In ${
+        yearWon(getFinals)[index].Year
+      }, ${winner} won the world cup!`;
+    }
+  );
+  return yearCountry;
+
+  //old code disregard
+  // let winningInfo = [];
+  // for (let i = 0; i < countryWinner(getFinals).length; i++) {
+  //   let info = `In ${yearWon(getFinals)[i]}, ${
+  //     countryWinner(getFinals)[i]
+  //   } won the world cup!`;
+  //   winningInfo.push(info);
+  // }
+  // return winningInfo;
 }
 
 console.log(getWinnersByYear(getWinners, getYears));
@@ -131,12 +106,19 @@ console.log(getWinnersByYear(getWinners, getYears));
 and away team goals scored per match (Hint: use .reduce and do this in 2 steps) */
 
 function getAverageGoals(data) {
-  let home = data.map(data["Home Team Goals"]);
-  let away = data.map();
-  var sum = data.reduce((total, current) => {
-    total += current["Home Team Goals"] + current["Away Team Goals"];
+  let homeTeamGoals = data.reduce((totalGoals, game) => {
+    return totalGoals + game["Home Team Goals"];
   }, 0);
-  return sum;
+
+  let homeTeamAvg = homeTeamGoals / data.length;
+
+  let awayTeamGoals = data.reduce((totalGoals, game) => {
+    return totalGoals + game["Away Team Goals"];
+  }, 0);
+
+  let awayTeamAvg = awayTeamGoals / data.length;
+
+  return `The Average of the Home Team Goals is ${homeTeamAvg} and the Average of the Away team goals is ${awayTeamAvg}`;
 }
 
 console.log(getAverageGoals(fifaData));
@@ -171,3 +153,11 @@ function badDefense(/* code here */) {
 badDefense();
 
 /* If you still have time, use the space below to work on any stretch goals of your chosing as listed in the README file. */
+
+/*
+foreach does not return an new array. Good for when you need to do something for every item in the array. Only good for grabbing data out of the object. 
+
+map returns an array. Go through all items in the array and modify them in some way.
+
+filter a combo fo foreach and map. almost always have an if statement inside. 
+*/
